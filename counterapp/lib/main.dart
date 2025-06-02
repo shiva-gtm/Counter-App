@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-void main() {
+Future<void> main() async {
+  await dotenv.load(fileName: "example.env");
   runApp(const MyApp());
 }
 
@@ -27,9 +29,16 @@ class Homepage extends StatefulWidget {
 
 class _HomepageState extends State<Homepage> {
   List? listResponse;
+
   Future apicall() async {
     http.Response response;
-    response = await http.get(Uri.parse('https://reqres.in/api/users?page=2'));
+
+    final apiurl = dotenv.env['API_URL'];
+    if (apiurl == null) {
+      throw Exception("API_URL not found in .env file");
+    }
+
+    response = await http.get(Uri.parse(apiurl));
     if (response.statusCode == 200) {
       setState(() {
         final mapResponse = json.decode(response.body);
@@ -40,8 +49,8 @@ class _HomepageState extends State<Homepage> {
 
   @override
   void initState() {
-    apicall();
     super.initState();
+    apicall();
   }
 
   @override
